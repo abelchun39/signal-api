@@ -1,33 +1,70 @@
 #libraries to include
 # https://github.com/rcv911/coherence-function/blob/master/coherence_function_EEG.py
+import json
+import numpy as np
+from scipy import signal
+import matplotlib.pyplot as plot
+from flask import Flask, jsonify, request, Response
+from flask_cors import CORS
+app = Flask(__name__)
+CORS(app)
 
-import os
-from flask import request, jsonify
-from app import app
-import logger
-@app.route('/get/questions/', methods=['GET', 'POST','DELETE', 'PATCH'])
-def question():
-    if request.method == 'POST':
-        average_time = request.form.get('average_time')
-        choices = request.form.get('choices')
-        created_by = request.form.get('created_by')
-        difficulty_level = request.form.get('difficulty_level')
-        question = request.form.get('question')
-        topics = request.form.get('topics')
+@app.route('/coherence', methods=['POST'])
+def coherence():
+        # https://docs.scipy.org/doc/scipy/reference/generated/scipy.signal.coherence.html
+        fs = 10e3
+        N = 1e5
+        amp = 20
+        freq = 1234.0
+        noise_power = 0.001 * fs / 2
+        time = np.arange(N) / fs
+        b, a = signal.butter(2, 0.25, 'low')
+        x = np.random.normal(scale=np.sqrt(noise_power), size=time.shape)
+        y = signal.lfilter(b, a, x)
+        x += amp*np.sin(2*np.pi*freq*time)
+        y += np.random.normal(scale=0.1*np.sqrt(noise_power), size=time.shape)
+        f, Cxy = signal.coherence(x, y, fs, nperseg=1024)
+        output = {}
+        output['coherence'] = Cxy.tolist()
+        output['frequency'] = f.tolist()
+        return Response(json.dumps(output), mimetype='application/json')
 
-# request.args is to get urls arguments 
+@app.route('/coherence/across', methods=['POST'])
+def acrossCoherence():
+        # https://pythontic.com/visualization/signals/coherence
+        print(request.json.get('name', ""))
+        # Create sine wave1
+        time        = np.arange(0, 100, 0.1)
+        sinewave1   = np.sin(time)
 
 
-# if request.method == 'GET':
-#     start = request.args.get('start', default=0, type=int)
-#     limit_url = request.args.get('limit', default=20, type=int)
-#     questions = mongo.db.questions.find().limit(limit_url).skip(start);
-#     data = [doc for doc in questions]
-#     return jsonify(isError= False,
-#                 message= "Success",
-#                 statusCode= 200,
-#                 data= data), 200
+        # Create sine wave2 as replica of sine wave1
+        time1        = np.arange(0, 100, 0.1)
+        sinewave2    = np.sin(time1)
 
-# request.form to get form parameter
+        # Plot the sine waves - subplot 1
+        # plot.title('Two sine waves with coherence as 1')
+        # plot.subplot(211)
+        # plot.grid(True, which='both')
+        # plot.xlabel('time')
+        # plot.ylabel('amplitude')
+        plot.plot(time, sinewave1, time1, sinewave2)
 
+        # Plot the coherence - subplot 2
+        # plot.subplot(212)
+        coh, f = plot.cohere(sinewave1, sinewave2, 256, 1./.01)
+        # print("Coherence between two signals:")
+        # print(coh)
+        # plot.ylabel('coherence')
 
+        # plot.show()
+
+        coh, f = plot.cohere(sinewave1, sinewave2, 256, 1./.01)
+
+        output = {}
+        output['coherence'] = coh.tolist()
+        output['frequency'] = f.tolist()
+        return Response(json.dumps(output), mimetype='application/json')
+
+if __name__ == '__main__':
+    app.run()
