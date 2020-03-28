@@ -40,19 +40,15 @@ def coherence():
 @app.route('/coherence/across', methods=['POST'])
 def acrossCoherence():
         # https://pythontic.com/visualization/signals/coherence
-
-        data1 = request.json.get('data1', [])
-        data2 = request.json.get('data2', [])
-
-        # print(request.json.get('name', ""))
+        print(request.json.get('name', ""))
         # Create sine wave1
-        # time        = np.arange(0, 100, 0.1)
-        # sinewave1   = np.sin(time)
+        time        = np.arange(0, 100, 0.1)
+        sinewave1   = np.sin(time)
 
 
         # Create sine wave2 as replica of sine wave1
-        # time1        = np.arange(0, 100, 0.1)
-        # sinewave2    = np.sin(time1)
+        time1        = np.arange(0, 100, 0.1)
+        sinewave2    = np.sin(time1)
 
         # Plot the sine waves - subplot 1
         # plot.title('Two sine waves with coherence as 1')
@@ -60,7 +56,7 @@ def acrossCoherence():
         # plot.grid(True, which='both')
         # plot.xlabel('time')
         # plot.ylabel('amplitude')
-        # plot.plot(time, sinewave1, time1, sinewave2)
+        plot.plot(time, sinewave1, time1, sinewave2)
 
         # Plot the coherence - subplot 2
         # plot.subplot(212)
@@ -70,16 +66,13 @@ def acrossCoherence():
         # plot.ylabel('coherence')
 
         # plot.show()
-        # print(sinewave1)
-        # print(sinewave2)
-        print(len(data1))
-        coh, f = plot.cohere(data1, data2, 64, 256)
+        print(sinewave1)
+        print(sinewave2)
+        coh, f = plot.cohere(sinewave1, sinewave2, 256, 1./.01)
 
         output = {}
-        output['code'] = 20000
-        output['data'] = {}
-        output['data']['coherence'] = coh.tolist()
-        output['data']['frequency'] = f.tolist()
+        output['coherence'] = coh.tolist()
+        output['frequency'] = f.tolist()
         return Response(json.dumps(output), mimetype='application/json')
 
 if __name__ == '__main__':

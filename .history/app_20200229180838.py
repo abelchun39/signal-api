@@ -73,7 +73,7 @@ def acrossCoherence():
         # print(sinewave1)
         # print(sinewave2)
         print(len(data1))
-        coh, f = plot.cohere(data1, data2, 64, 256)
+        coh, f = plot.cohere(data1, data2, 128, 256)
 
         output = {}
         output['code'] = 20000
