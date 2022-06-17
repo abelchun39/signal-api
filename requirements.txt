@@ -1,5 +1,5 @@
 flask>=0.12
 matplotlib==1.4.3
-numpy==1.9.2
+numpy==1.21.0
 Flask-Cors==3.0.8
 scipy>=0.10
